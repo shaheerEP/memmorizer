@@ -26,6 +26,7 @@ export default function Header() {
     { href: "/add-content", label: "Add Content" },
     { href: "/analytics", label: "Analytics" },
     { href: "/settings", label: "Settings" },
+    { href: "/content-library", label: "Content Library" },
   ]
 
   return (

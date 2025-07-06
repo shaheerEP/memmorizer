@@ -24,6 +24,7 @@ export interface ContentDocument {
   reviewStage: 'daily' | 'weekly' | 'monthly' | 'yearly' // Add this field
   estimatedTime?: string // Add this field
   isActive: boolean
+  archived?: boolean
 }
 
 export interface UserSubject {

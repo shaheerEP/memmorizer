@@ -5,6 +5,7 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthGuard } from "@/components/auth-guard"
 import SessionProviderWrapper from "@/components/session-provider-wrapper"
+import Header from "./Header" // Add this import
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -23,7 +24,10 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <SessionProviderWrapper>
-            <AuthGuard>{children}</AuthGuard>
+            <AuthGuard>
+              <Header />
+              {children}
+            </AuthGuard>
           </SessionProviderWrapper>
         </ThemeProvider>
       </body>

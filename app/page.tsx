@@ -110,11 +110,9 @@ export default function StudyFlowDashboard() {
   const totalCompleted = reviewSections.reduce((sum, section) => sum + section.completed, 0)
   const overallProgress = totalReviews > 0 ? (totalCompleted / totalReviews) * 100 : 0
 
-  return (
-    <div className="min-h-screen bg-background">
-      <Header />
-
-      <div className="container mx-auto px-4 py-6">
+ return (
+  <div className="min-h-screen bg-background">
+    <div className="container mx-auto px-4 py-6">
         {/* Today's Overview */}
         <div className="mb-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
