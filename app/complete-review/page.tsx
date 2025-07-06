@@ -285,187 +285,197 @@ export default function CompleteReviewPage() {
     return total + minutes
   }, 0)
 
-  return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-6 max-w-4xl">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon" onClick={() => router.back()}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold">Complete Review</h1>
-              <p className="text-muted-foreground flex items-center">
-                <Calendar className="h-4 w-4 mr-2" />
-                {today}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPreviewMode(!previewMode)}
-              className={previewMode ? "bg-primary/10 border-primary" : ""}
-            >
-              {previewMode ? <EyeOff className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />}
-              {previewMode ? "Hide Controls" : "Show Controls"}
-            </Button>
-            {previewMode && (
-              <Button variant="outline" size="sm" onClick={handleCopyAll}>
-                <Copy className="h-4 w-4 mr-2" />
-                Copy All
-              </Button>
-            )}
+ return (
+  <div className="min-h-screen bg-background">
+    <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-4xl">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3 sm:gap-0">
+        <div className="flex items-center space-x-3 sm:space-x-4">
+          <Button variant="ghost" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold">Complete Review</h1>
+            <p className="text-muted-foreground flex items-center text-sm">
+              <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              {today}
+            </p>
           </div>
         </div>
-
-        {/* Summary Card */}
-        <Card className="mb-6">
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="flex items-center space-x-2">
-                <BookOpen className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Items</p>
-                  <p className="text-lg font-semibold">{activeItems.length}</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Clock className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Estimated Time</p>
-                  <p className="text-lg font-semibold">{totalEstimatedTime} minutes</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Content Items */}
-        <div className="space-y-6">
-          {activeItems.length === 0 ? (
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">All Done!</h3>
-                <p className="text-muted-foreground">You've completed all your reviews for today. Great job!</p>
-                <Button className="mt-4" onClick={() => router.push("/")}>
-                  Return to Dashboard
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            activeItems.map((item, index) => (
-              <Card key={item._id} className="relative">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <CardTitle className="text-xl">{item.title}</CardTitle>
-                        <Badge className={`${item.subject.color} text-white`}>{item.subject.name}</Badge>
-                      </div>
-                      <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                        <div className="flex items-center space-x-1">
-                          <Calendar className="h-4 w-4" />
-                          <span>Scheduled: {new Date(item.scheduledDate).toLocaleDateString()}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <Clock className="h-4 w-4" />
-                          <span>{item.estimatedTime}</span>
-                        </div>
-                        <Badge variant="outline" className={getStageColor(item.reviewStage)}>
-                          {item.reviewStage}
-                        </Badge>
-                      </div>
-                    </div>
-
-                    {/* Action Buttons */}
-                    {previewMode && (
-                      <div className="flex items-center space-x-2 ml-4">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleCopyItem(item)}
-                          title="Copy to clipboard"
-                        >
-                          <Copy className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleArchiveItem(item._id)}
-                          title="Archive item"
-                        >
-                          <Archive className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteItem(item._id)}
-                          title="Delete item"
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div
-                    className="prose prose-sm max-w-none dark:prose-invert leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: renderContent(item.content) }}
-                  />
-                  <div className="flex justify-end mt-4">
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={() => handleMarkAsComplete(item._id)}
-                    >
-                      Mark as Complete
-                    </Button>
-                  </div>
-                </CardContent>
-                {index < activeItems.length - 1 && <Separator className="mt-6" />}
-              </Card>
-            ))
+        <div className="flex items-center space-x-2 self-end sm:self-auto">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPreviewMode(!previewMode)}
+            className={`${previewMode ? "bg-primary/10 border-primary" : ""} text-xs sm:text-sm`}
+          >
+            {previewMode ? <EyeOff className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" /> : <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />}
+            <span className="hidden sm:inline">{previewMode ? "Hide Controls" : "Show Controls"}</span>
+            <span className="sm:hidden">{previewMode ? "Hide" : "Show"}</span>
+          </Button>
+          {previewMode && (
+            <Button variant="outline" size="sm" onClick={handleCopyAll} className="text-xs sm:text-sm">
+              <Copy className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Copy All</span>
+              <span className="sm:hidden">Copy</span>
+            </Button>
           )}
         </div>
-
-        {/* Delete Confirmation Dialog */}
-        <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle className="flex items-center space-x-2">
-                <AlertTriangle className="h-5 w-5 text-destructive" />
-                <span>Delete Item</span>
-              </DialogTitle>
-              <DialogDescription>
-                Are you sure you want to permanently delete this item? This action cannot be undone.
-              </DialogDescription>
-            </DialogHeader>
-            {itemToDelete && (
-              <Alert className="border-destructive/20 bg-destructive/5">
-                <AlertTriangle className="h-4 w-4 text-destructive" />
-                <AlertDescription>
-                  <strong>"{todaysContent.find((item) => item._id === itemToDelete)?.title}"</strong> will be permanently
-                  deleted from your study library.
-                </AlertDescription>
-              </Alert>
-            )}
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
-                Cancel
-              </Button>
-              <Button variant="destructive" onClick={confirmDelete}>
-                Delete Permanently
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </div>
+
+      {/* Summary Card */}
+      <Card className="mb-4 sm:mb-6">
+        <CardContent className="pt-4 sm:pt-6">
+          <div className="grid grid-cols-2 sm:grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+            <div className="flex items-center space-x-2">
+              <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+              <div>
+                <p className="text-xs sm:text-sm text-muted-foreground">Total Items</p>
+                <p className="text-base sm:text-lg font-semibold">{activeItems.length}</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+              <div>
+                <p className="text-xs sm:text-sm text-muted-foreground">Est. Time</p>
+                <p className="text-base sm:text-lg font-semibold">{totalEstimatedTime} min</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Content Items */}
+      <div className="space-y-4 sm:space-y-6">
+        {activeItems.length === 0 ? (
+          <Card>
+            <CardContent className="pt-4 sm:pt-6 text-center">
+              <CheckCircle className="h-10 w-10 sm:h-12 sm:w-12 text-green-500 mx-auto mb-3 sm:mb-4" />
+              <h3 className="text-base sm:text-lg font-semibold mb-2">All Done!</h3>
+              <p className="text-sm sm:text-base text-muted-foreground px-2">You've completed all your reviews for today. Great job!</p>
+              <Button className="mt-3 sm:mt-4" onClick={() => router.push("/")}>
+                Return to Dashboard
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          activeItems.map((item, index) => (
+            <Card key={item._id} className="relative">
+              <CardHeader className="pb-3 sm:pb-6">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-0">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 mb-2 gap-2 sm:gap-0">
+                      <CardTitle className="text-lg sm:text-xl break-words">{item.title}</CardTitle>
+                      <Badge className={`${item.subject.color} text-white self-start sm:self-auto text-xs`}>
+                        {item.subject.name}
+                      </Badge>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 text-xs sm:text-sm text-muted-foreground gap-1 sm:gap-0">
+                      <div className="flex items-center space-x-1">
+                        <Calendar className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                        <span>Scheduled: {new Date(item.scheduledDate).toLocaleDateString()}</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Clock className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                        <span>{item.estimatedTime}</span>
+                      </div>
+                      <Badge variant="outline" className={`${getStageColor(item.reviewStage)} text-xs self-start sm:self-auto`}>
+                        {item.reviewStage}
+                      </Badge>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  {previewMode && (
+                    <div className="flex items-center space-x-1 sm:space-x-2 sm:ml-4 self-end sm:self-start">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleCopyItem(item)}
+                        title="Copy to clipboard"
+                        className="h-8 w-8 sm:h-9 sm:w-auto p-0 sm:px-3"
+                      >
+                        <Copy className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <span className="hidden sm:inline sm:ml-2">Copy</span>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleArchiveItem(item._id)}
+                        title="Archive item"
+                        className="h-8 w-8 sm:h-9 sm:w-auto p-0 sm:px-3"
+                      >
+                        <Archive className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <span className="hidden sm:inline sm:ml-2">Archive</span>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeleteItem(item._id)}
+                        title="Delete item"
+                        className="text-destructive hover:text-destructive h-8 w-8 sm:h-9 sm:w-auto p-0 sm:px-3"
+                      >
+                        <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <span className="hidden sm:inline sm:ml-2">Delete</span>
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div
+                  className="prose prose-sm max-w-none dark:prose-invert leading-relaxed text-sm sm:text-base"
+                  dangerouslySetInnerHTML={{ __html: renderContent(item.content) }}
+                />
+                <div className="flex justify-end mt-3 sm:mt-4">
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => handleMarkAsComplete(item._id)}
+                    className="text-sm w-full sm:w-auto"
+                  >
+                    Mark as Complete
+                  </Button>
+                </div>
+              </CardContent>
+              {index < activeItems.length - 1 && <Separator className="mt-4 sm:mt-6" />}
+            </Card>
+          ))
+        )}
+      </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="mx-4 sm:mx-0 w-[calc(100vw-2rem)] sm:w-full max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2 text-base sm:text-lg">
+              <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 text-destructive" />
+              <span>Delete Item</span>
+            </DialogTitle>
+            <DialogDescription className="text-sm sm:text-base">
+              Are you sure you want to permanently delete this item? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          {itemToDelete && (
+            <Alert className="border-destructive/20 bg-destructive/5">
+              <AlertTriangle className="h-4 w-4 text-destructive" />
+              <AlertDescription className="text-sm">
+                <strong>"{todaysContent.find((item) => item._id === itemToDelete)?.title}"</strong> will be permanently
+                deleted from your study library.
+              </AlertDescription>
+            </Alert>
+          )}
+          <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)} className="w-full sm:w-auto">
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={confirmDelete} className="w-full sm:w-auto">
+              Delete Permanently
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
-  )
+  </div>
+)
 }

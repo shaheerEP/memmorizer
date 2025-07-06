@@ -433,372 +433,454 @@ const handleArchive = async (itemId: string) => {
     )
   }
 
-  return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-6">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Content Library</h1>
-            <p className="text-muted-foreground">
-              Manage your study content and review schedule
-              {stats && (
-                <span className="ml-2">
-                  • {stats.totalItems} items • {stats.dueTodayCount} due today
-                </span>
-              )}
-            </p>
-          </div>
-          <div className="flex items-center space-x-2 mt-4 md:mt-0">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => fetchContent(pagination.page, false)}
-              disabled={refreshing}
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
-            <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
-              <DialogTrigger asChild>
-                <Button variant="outline">
-                  <Upload className="h-4 w-4 mr-2" />
-                  Import
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>Import Content</DialogTitle>
-                  <DialogDescription>
-                    Paste multiple items separated by "---". Each item should have a title and content.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="import-text">Content</Label>
-                    <Textarea
-                      id="import-text"
-                      placeholder="Title 1&#10;Content for first item&#10;---&#10;Title 2&#10;Content for second item&#10;---"
-                      value={importText}
-                      onChange={(e) => setImportText(e.target.value)}
-                      className="min-h-[200px]"
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setShowImportDialog(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleImport} disabled={!importText.trim()}>
-                    Import Items
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-            <Button onClick={() => router.push("/add-content")}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Content
-            </Button>
+ return (
+  <div className="min-h-screen bg-background">
+    <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6">
+      {/* Header */}
+      <div className="flex flex-col space-y-4 mb-4 sm:mb-6">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2">Content Library</h1>
+          <div className="text-sm sm:text-base text-muted-foreground">
+            <p className="mb-1">Manage your study content and review schedule</p>
+            {stats && (
+              <p className="text-xs sm:text-sm">
+                {stats.totalItems} items • {stats.dueTodayCount} due today
+              </p>
+            )}
           </div>
         </div>
-
-        {/* Filters */}
-        <Card className="mb-6">
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search content..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
+        
+        {/* Action Buttons - Mobile Optimized */}
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 sm:items-center">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => fetchContent(pagination.page, false)}
+            disabled={refreshing}
+            className="w-full sm:w-auto"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          
+          <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="w-full sm:w-auto">
+                <Upload className="h-4 w-4 mr-2" />
+                Import
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="w-[95vw] max-w-2xl mx-auto">
+              <DialogHeader>
+                <DialogTitle>Import Content</DialogTitle>
+                <DialogDescription className="text-sm">
+                  Paste multiple items separated by "---". Each item should have a title and content.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="import-text">Content</Label>
+                  <Textarea
+                    id="import-text"
+                    placeholder="Title 1&#10;Content for first item&#10;---&#10;Title 2&#10;Content for second item&#10;---"
+                    value={importText}
+                    onChange={(e) => setImportText(e.target.value)}
+                    className="min-h-[150px] sm:min-h-[200px] text-sm"
+                  />
+                </div>
               </div>
-              <Select value={selectedSubject} onValueChange={setSelectedSubject}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Subject" />
-                </SelectTrigger>
-                <SelectContent>
-                  {subjects.map((subject) => (
-                    <SelectItem key={subject} value={subject}>
-                      {subject}
-                      {stats && subject !== "All" && (
-                        <span className="ml-2 text-xs text-muted-foreground">
-                          ({stats.subjects[subject]})
-                        </span>
-                      )}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={selectedStage} onValueChange={setSelectedStage}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Review Stage" />
-                </SelectTrigger>
-                <SelectContent>
-                  {reviewStages.map((stage) => (
-                    <SelectItem key={stage} value={stage}>
-                      {stage}
-                      {stats && stage !== "All" && (
-                        <span className="ml-2 text-xs text-muted-foreground">
-                          ({stats.reviewStages[stage as keyof typeof stats.reviewStages]})
-                        </span>
-                      )}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={selectedDifficulty} onValueChange={setSelectedDifficulty}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Difficulty" />
-                </SelectTrigger>
-                <SelectContent>
-                  {difficulties.map((difficulty) => (
-                    <SelectItem key={difficulty} value={difficulty}>
-                      {difficulty}
-                      {stats && difficulty !== "All" && (
-                        <span className="ml-2 text-xs text-muted-foreground">
-                          ({stats.difficulties[difficulty as keyof typeof stats.difficulties]})
-                        </span>
-                      )}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={`${sortBy}-${sortOrder}`} onValueChange={(value) => {
-                const [field, order] = value.split('-')
-                setSortBy(field)
-                setSortOrder(order)
-              }}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="createdAt-desc">Newest first</SelectItem>
-                  <SelectItem value="createdAt-asc">Oldest first</SelectItem>
-                  <SelectItem value="title-asc">Title A-Z</SelectItem>
-                  <SelectItem value="title-desc">Title Z-A</SelectItem>
-                  <SelectItem value="nextReview-asc">Next review</SelectItem>
-                  <SelectItem value="difficulty-asc">Difficulty</SelectItem>
-                </SelectContent>
-              </Select>
+              <DialogFooter className="flex-col sm:flex-row gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowImportDialog(false)}
+                  className="w-full sm:w-auto"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleImport} 
+                  disabled={!importText.trim()}
+                  className="w-full sm:w-auto"
+                >
+                  Import Items
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          
+          <Button 
+            onClick={() => router.push("/add-content")}
+            className="w-full sm:w-auto"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Content
+          </Button>
+        </div>
+      </div>
+
+      {/* Filters - Mobile Optimized */}
+      <Card className="mb-4 sm:mb-6">
+        <CardContent className="p-3 sm:pt-6">
+          <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 sm:gap-4">
+            {/* Search - Full width on mobile */}
+            <div className="relative sm:col-span-2 md:col-span-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search content..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 text-sm"
+              />
+            </div>
+            
+            {/* Subject Filter */}
+            <Select value={selectedSubject} onValueChange={setSelectedSubject}>
+              <SelectTrigger className="text-sm">
+                <SelectValue placeholder="Subject" />
+              </SelectTrigger>
+              <SelectContent>
+                {subjects.map((subject) => (
+                  <SelectItem key={subject} value={subject}>
+                    {subject}
+                    {stats && subject !== "All" && (
+                      <span className="ml-2 text-xs text-muted-foreground">
+                        ({stats.subjects[subject]})
+                      </span>
+                    )}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            {/* Review Stage Filter */}
+            <Select value={selectedStage} onValueChange={setSelectedStage}>
+              <SelectTrigger className="text-sm">
+                <SelectValue placeholder="Review Stage" />
+              </SelectTrigger>
+              <SelectContent>
+                {reviewStages.map((stage) => (
+                  <SelectItem key={stage} value={stage}>
+                    {stage}
+                    {stats && stage !== "All" && (
+                      <span className="ml-2 text-xs text-muted-foreground">
+                        ({stats.reviewStages[stage as keyof typeof stats.reviewStages]})
+                      </span>
+                    )}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            {/* Difficulty Filter */}
+            <Select value={selectedDifficulty} onValueChange={setSelectedDifficulty}>
+              <SelectTrigger className="text-sm">
+                <SelectValue placeholder="Difficulty" />
+              </SelectTrigger>
+              <SelectContent>
+                {difficulties.map((difficulty) => (
+                  <SelectItem key={difficulty} value={difficulty}>
+                    {difficulty}
+                    {stats && difficulty !== "All" && (
+                      <span className="ml-2 text-xs text-muted-foreground">
+                        ({stats.difficulties[difficulty as keyof typeof stats.difficulties]})
+                      </span>
+                    )}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            {/* Sort Filter */}
+            <Select value={`${sortBy}-${sortOrder}`} onValueChange={(value) => {
+              const [field, order] = value.split('-')
+              setSortBy(field)
+              setSortOrder(order)
+            }}>
+              <SelectTrigger className="text-sm">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="createdAt-desc">Newest first</SelectItem>
+                <SelectItem value="createdAt-asc">Oldest first</SelectItem>
+                <SelectItem value="title-asc">Title A-Z</SelectItem>
+                <SelectItem value="title-desc">Title Z-A</SelectItem>
+                <SelectItem value="nextReview-asc">Next review</SelectItem>
+                <SelectItem value="difficulty-asc">Difficulty</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Bulk Actions - Mobile Optimized */}
+      {selectedItems.length > 0 && (
+        <Card className="mb-4 sm:mb-6 border-primary">
+          <CardContent className="p-3 sm:pt-6">
+            <div className="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4">
+                <span className="font-medium text-sm sm:text-base">
+                  {selectedItems.length} items selected
+                </span>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleSelectAll}
+                  className="w-full sm:w-auto mt-2 sm:mt-0"
+                >
+                  {selectedItems.length === contentItems.length ? "Deselect All" : "Select All"}
+                </Button>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:space-x-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleBulkExport}
+                  className="w-full sm:w-auto"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Export
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleBulkArchive}
+                  className="w-full sm:w-auto"
+                >
+                  <Archive className="h-4 w-4 mr-2" />
+                  Archive
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  onClick={handleBulkDelete}
+                  className="w-full sm:w-auto"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
+      )}
 
-        {/* Bulk Actions */}
-        {selectedItems.length > 0 && (
-          <Card className="mb-6 border-primary">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <span className="font-medium">{selectedItems.length} items selected</span>
-                  <Button variant="outline" size="sm" onClick={handleSelectAll}>
-                    {selectedItems.length === contentItems.length ? "Deselect All" : "Select All"}
-                  </Button>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Button variant="outline" size="sm" onClick={handleBulkExport}>
-                    <Download className="h-4 w-4 mr-2" />
-                    Export
-                  </Button>
-                 <Button variant="outline" size="sm" onClick={handleBulkArchive}>
-  <Archive className="h-4 w-4 mr-2" />
-  Archive
-</Button>
-                  <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+      {/* Content List - Mobile Optimized */}
+      <div className="space-y-3 sm:space-y-4">
+        {contentItems.map((item) => (
+          <Card key={item.id} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-3 sm:pt-6">
+              <div className="flex items-start space-x-3 sm:space-x-4">
+                <Checkbox
+                  checked={selectedItems.includes(item.id)}
+                  onCheckedChange={() => handleSelectItem(item.id)}
+                  className="mt-1"
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="text-base sm:text-lg font-semibold line-clamp-2 pr-2">
+                      {item.title}
+                    </h3>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-10 sm:w-10">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handlePreview(item.id)}>
+                          <Eye className="h-4 w-4 mr-2" />
+                          Preview
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleEdit(item.id)}>
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleDuplicate(item.id)}>
+                          <Copy className="h-4 w-4 mr-2" />
+                          Duplicate
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleArchive(item.id)}>
+                          <Archive className="h-4 w-4 mr-2" />
+                          Archive
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem 
+                          className="text-destructive"
+                          onClick={() => handleDelete(item.id)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
 
-        {/* Content List */}
-        <div className="space-y-4">
-          {contentItems.map((item) => (
-            <Card key={item.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="pt-6">
-                <div className="flex items-start space-x-4">
-                  <Checkbox
-                    checked={selectedItems.includes(item.id)}
-                    onCheckedChange={() => handleSelectItem(item.id)}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-lg font-semibold truncate">{item.title}</h3>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-  <DropdownMenuItem onClick={() => handlePreview(item.id)}>
-    <Eye className="h-4 w-4 mr-2" />
-    Preview
-  </DropdownMenuItem>
-  <DropdownMenuItem onClick={() => handleEdit(item.id)}>
-    <Edit className="h-4 w-4 mr-2" />
-    Edit
-  </DropdownMenuItem>
-  <DropdownMenuItem onClick={() => handleDuplicate(item.id)}>
-    <Copy className="h-4 w-4 mr-2" />
-    Duplicate
-  </DropdownMenuItem>
-  <DropdownMenuItem onClick={() => handleArchive(item.id)}>
-    <Archive className="h-4 w-4 mr-2" />
-    Archive
-  </DropdownMenuItem>
-  <DropdownMenuSeparator />
-  <DropdownMenuItem 
-    className="text-destructive"
-    onClick={() => handleDelete(item.id)}
-  >
-    <Trash2 className="h-4 w-4 mr-2" />
-    Delete
-  </DropdownMenuItem>
-</DropdownMenuContent>
-                      </DropdownMenu>
+                  <p className="text-sm text-muted-foreground mb-3 line-clamp-3 sm:line-clamp-2">
+                    {item.content}
+                  </p>
+
+                  {/* Mobile: Stack badges and dates vertically */}
+                  <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+                    <div className="flex flex-wrap gap-1 sm:gap-2">
+                      <Badge 
+                        className={`${item.subject.color} text-white text-xs`}
+                        variant="secondary"
+                      >
+                        {item.subject.name}
+                      </Badge>
+                      <Badge 
+                        variant="outline" 
+                        className={`${getStageColor(item.reviewStage)} text-xs`}
+                      >
+                        {item.reviewStage}
+                      </Badge>
+                      <Badge 
+                        variant="outline" 
+                        className={`${getDifficultyColor(item.difficulty)} text-xs`}
+                      >
+                        {item.difficulty}
+                      </Badge>
+                      {item.tags.length > 0 && (
+                        <Badge variant="outline" className="text-xs">
+                          {item.tags.length} tag{item.tags.length > 1 ? 's' : ''}
+                        </Badge>
+                      )}
                     </div>
 
-                    <p className="text-muted-foreground mb-3 line-clamp-2">{item.content}</p>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <Badge className={`${item.subject.color} text-white`}>
-                          {item.subject.name}
-                        </Badge>
-                        <Badge variant="outline" className={getStageColor(item.reviewStage)}>
-                          {item.reviewStage}
-                        </Badge>
-                        <Badge variant="outline" className={getDifficultyColor(item.difficulty)}>
-                          {item.difficulty}
-                        </Badge>
-                        {item.tags.length > 0 && (
-                          <Badge variant="outline">
-                            {item.tags.length} tag{item.tags.length > 1 ? 's' : ''}
-                          </Badge>
-                        )}
+                    {/* Mobile: Stack dates vertically */}
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 text-xs text-muted-foreground space-y-1 sm:space-y-0">
+                      <div className="flex items-center space-x-1">
+                        <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <span>Next: {new Date(item.nextReview).toLocaleDateString()}</span>
                       </div>
-
-                      <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                        <div className="flex items-center space-x-1">
-                          <Calendar className="h-4 w-4" />
-                          <span>Next: {new Date(item.nextReview).toLocaleDateString()}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <Tag className="h-4 w-4" />
-                          <span>Added: {new Date(item.dateAdded).toLocaleDateString()}</span>
-                        </div>
+                      <div className="flex items-center space-x-1">
+                        <Tag className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <span>Added: {new Date(item.dateAdded).toLocaleDateString()}</span>
                       </div>
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Pagination */}
-        {pagination.pages > 1 && (
-          <Card className="mt-6">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-muted-foreground">
-                  Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} results
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePageChange(pagination.page - 1)}
-                    disabled={pagination.page === 1}
-                  >
-                    Previous
-                  </Button>
-                  <span className="text-sm">
-                    Page {pagination.page} of {pagination.pages}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePageChange(pagination.page + 1)}
-                    disabled={pagination.page === pagination.pages}
-                  >
-                    Next
-                  </Button>
-                </div>
               </div>
             </CardContent>
           </Card>
-        )}
-
-        {/* Empty State */}
-        {contentItems.length === 0 && !loading && (
-          <Card>
-            <CardContent className="pt-6 text-center">
-              <p className="text-muted-foreground">No content found matching your filters.</p>
-              <Button className="mt-4" onClick={() => router.push("/add-content")}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Your First Item
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Preview Dialog */}
-<Dialog open={showPreviewDialog} onOpenChange={setShowPreviewDialog}>
-  <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-    <DialogHeader>
-      <DialogTitle>{previewItem?.title}</DialogTitle>
-    </DialogHeader>
-    <div className="space-y-4">
-      <div className="flex items-center space-x-2">
-        <Badge className={`${previewItem?.subject.color} text-white`}>
-          {previewItem?.subject.name}
-        </Badge>
-        <Badge variant="outline" className={getStageColor(previewItem?.reviewStage || '')}>
-          {previewItem?.reviewStage}
-        </Badge>
-        <Badge variant="outline" className={getDifficultyColor(previewItem?.difficulty || '')}>
-          {previewItem?.difficulty}
-        </Badge>
+        ))}
       </div>
-      <div className="prose max-w-none">
-        <pre className="whitespace-pre-wrap text-sm">{previewItem?.content}</pre>
-      </div>
-      {previewItem?.tags && previewItem.tags.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {previewItem.tags.map((tag, index) => (
-            <Badge key={index} variant="secondary">{tag}</Badge>
-          ))}
-        </div>
+
+      {/* Pagination - Mobile Optimized */}
+      {pagination.pages > 1 && (
+        <Card className="mt-4 sm:mt-6">
+          <CardContent className="p-3 sm:pt-6">
+            <div className="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between">
+              <div className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
+                Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} results
+              </div>
+              <div className="flex items-center justify-center sm:justify-end space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(pagination.page - 1)}
+                  disabled={pagination.page === 1}
+                  className="text-xs sm:text-sm"
+                >
+                  Previous
+                </Button>
+                <span className="text-xs sm:text-sm px-2">
+                  Page {pagination.page} of {pagination.pages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(pagination.page + 1)}
+                  disabled={pagination.page === pagination.pages}
+                  className="text-xs sm:text-sm"
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       )}
-    </div>
-  </DialogContent>
-</Dialog>
 
-{/* Edit Dialog */}
-<Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-  <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-    <DialogHeader>
-      <DialogTitle>Edit Content</DialogTitle>
-    </DialogHeader>
-    {editItem && (
-      <EditContentForm 
-        item={editItem} 
-        onSave={handleSaveEdit}
-        onCancel={() => setShowEditDialog(false)}
-      />
-    )}
-  </DialogContent>
-</Dialog>
+      {/* Empty State */}
+      {contentItems.length === 0 && !loading && (
+        <Card>
+          <CardContent className="p-6 text-center">
+            <p className="text-muted-foreground mb-4">No content found matching your filters.</p>
+            <Button 
+              onClick={() => router.push("/add-content")}
+              className="w-full sm:w-auto"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Your First Item
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
-      </div>
+      {/* Preview Dialog - Mobile Optimized */}
+      <Dialog open={showPreviewDialog} onOpenChange={setShowPreviewDialog}>
+        <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-lg sm:text-xl line-clamp-2">
+              {previewItem?.title}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex flex-wrap gap-2">
+              <Badge 
+                className={`${previewItem?.subject.color} text-white text-xs`}
+                variant="secondary"
+              >
+                {previewItem?.subject.name}
+              </Badge>
+              <Badge 
+                variant="outline" 
+                className={`${getStageColor(previewItem?.reviewStage || '')} text-xs`}
+              >
+                {previewItem?.reviewStage}
+              </Badge>
+              <Badge 
+                variant="outline" 
+                className={`${getDifficultyColor(previewItem?.difficulty || '')} text-xs`}
+              >
+                {previewItem?.difficulty}
+              </Badge>
+            </div>
+            <div className="prose max-w-none">
+              <pre className="whitespace-pre-wrap text-xs sm:text-sm bg-muted p-3 rounded-md overflow-x-auto">
+                {previewItem?.content}
+              </pre>
+            </div>
+            {previewItem?.tags && previewItem.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {previewItem.tags.map((tag, index) => (
+                  <Badge key={index} variant="secondary" className="text-xs">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Dialog - Mobile Optimized */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-lg sm:text-xl">Edit Content</DialogTitle>
+          </DialogHeader>
+          {editItem && (
+            <EditContentForm 
+              item={editItem} 
+              onSave={handleSaveEdit}
+              onCancel={() => setShowEditDialog(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
-  )
+  </div>
+)
 }

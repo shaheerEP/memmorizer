@@ -27,6 +27,7 @@ export default function Header() {
     { href: "/analytics", label: "Analytics" },
     { href: "/settings", label: "Settings" },
     { href: "/content-library", label: "Content Library" },
+    { href: "/complete-review", label: "Review Today" },
   ]
 
   return (
