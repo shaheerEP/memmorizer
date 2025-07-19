@@ -21,7 +21,7 @@ const UserService = {
     // Add default repetition flow if not provided
     const userWithDefaults = {
       ...userData,
-      repetitionFlow: userData.repetitionFlow || [2, 4, 7, 7, 7, 30, 30, 30, 130, 130, 130, 365, 365, 365],
+      repetitionFlow: userData.repetitionFlow || [1,1,1, 7, 7, 7, 30, 30, 30, 130, 130, 130, 365, 365, 365],
       createdAt: new Date(),
       updatedAt: new Date()
     }
