@@ -1,4 +1,3 @@
-// app/api/content/actions/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import clientPromise from '@/lib/mongodb'
@@ -35,51 +34,25 @@ export async function POST(request: NextRequest) {
     const collection = db.collection('contents')
 
     if (action === 'reviewed') {
-      const item = await collection.findOne({ 
-        _id: new ObjectId(contentId), 
-        userId: session.user.id 
-      })
+      const item = await collection.findOne({ _id: new ObjectId(contentId), userId: session.user.id })
 
       if (!item) {
         console.warn("⚠️ Content not found for ID:", contentId)
         return NextResponse.json({ error: 'Content not found' }, { status: 404 })
       }
 
-      // Find today's date
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-      const tomorrow = new Date(today)
-      tomorrow.setDate(tomorrow.getDate() + 1)
+      const intervals = [1, 2, 4, 7, 15, 30, 90, 180, 365]
+      const reviewCount = (item.reviewCount || 0) + 1
+      const nextInterval = intervals[Math.min(reviewCount - 1, intervals.length - 1)]
 
-      // Find the review date that matches today and mark it as completed
-      const reviewDates = item.reviewDates || []
-      let updated = false
+      const nextReviewDate = new Date()
+      nextReviewDate.setDate(nextReviewDate.getDate() + nextInterval)
 
-      const updatedReviewDates = reviewDates.map((review: any) => {
-        const reviewDate = new Date(review.date)
-        reviewDate.setHours(0, 0, 0, 0)
-        
-        // If this is today's review and not completed yet, mark as completed
-        if (reviewDate.getTime() === today.getTime() && !review.completed) {
-          updated = true
-          return { ...review, completed: true }
-        }
-        return review
-      })
-
-      if (!updated) {
-        console.warn("⚠️ No pending review found for today for content:", contentId)
-        return NextResponse.json({ error: 'No pending review found for today' }, { status: 400 })
-      }
-
-      // Update the document
       await collection.updateOne(
         { _id: new ObjectId(contentId) },
         {
-          $set: { 
-            reviewDates: updatedReviewDates,
-            updatedAt: new Date() 
-          }
+          $set: { nextReviewDate, updatedAt: new Date() },
+          $inc: { reviewCount: 1 }
         }
       )
 
