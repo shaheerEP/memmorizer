@@ -749,10 +749,7 @@ const handleArchive = async (itemId: string) => {
 
                     {/* Mobile: Stack dates vertically */}
                     <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 text-xs text-muted-foreground space-y-1 sm:space-y-0">
-                      <div className="flex items-center space-x-1">
-                        <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
-                        <span>Next: {new Date(item.nextReview).toLocaleDateString()}</span>
-                      </div>
+                      
                       <div className="flex items-center space-x-1">
                         <Tag className="h-3 w-3 sm:h-4 sm:w-4" />
                         <span>Added: {new Date(item.dateAdded).toLocaleDateString()}</span>
