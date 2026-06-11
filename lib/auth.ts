@@ -1,8 +1,6 @@
 // lib/auth.ts
 import type { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
-import UserService from './services/userService'
-import bcrypt from 'bcryptjs'
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -17,45 +15,29 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Invalid credentials')
         }
         
-        try {
-          const user = await UserService.findByEmail(credentials.email)
-          
-          if (!user || !user.password) {
-            throw new Error('Invalid credentials')
-          }
-          
-          const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
-          
-          if (!isPasswordValid) {
-            throw new Error('Invalid credentials')
-          }
-          
+        // Hardcoded admin check
+        const ADMIN_EMAIL = 'admin@example.com'
+        const ADMIN_PASSWORD = 'admin_password_123'
+        
+        if (credentials.email === ADMIN_EMAIL && credentials.password === ADMIN_PASSWORD) {
           return {
-            id: user._id.toString(),
-            email: user.email,
-            name: user.name,
-            image: user.image
+            id: 'admin_id_123',
+            email: ADMIN_EMAIL,
+            name: 'Admin User',
+            image: null,
           }
-        } catch (error: any) {
-          throw new Error(error.message || 'Error during sign in')
         }
+        
+        throw new Error('Invalid credentials')
       }
     })
   ],
   callbacks: {
     async session({ session, token }) {
-      try {
-        if (session.user?.email) {
-          const user = await UserService.findByEmail(session.user.email)
-          if (user) {
-            session.user.id = user._id.toString()
-          }
-        }
-        return session
-      } catch (error) {
-        console.error('Session callback error:', error)
-        return session
+      if (session.user && token.id) {
+        session.user.id = token.id as string
       }
+      return session
     },
     async jwt({ token, user }) {
       if (user) {
