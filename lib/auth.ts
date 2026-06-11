@@ -1,38 +1,48 @@
 // lib/auth.ts
 import type { NextAuthOptions } from 'next-auth'
-import GoogleProvider from 'next-auth/providers/google'
+import CredentialsProvider from 'next-auth/providers/credentials'
 import UserService from './services/userService'
+import bcrypt from 'bcryptjs'
 
 export const authOptions: NextAuthOptions = {
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-    }),
-  ],
-  callbacks: {
-    async signIn({ user, account }) {
-      if (account?.provider === 'google') {
+    CredentialsProvider({
+      name: 'Credentials',
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" }
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error('Invalid credentials')
+        }
+        
         try {
-          const existingUser = await UserService.findByEmail(user.email as string)
-                     
-          if (!existingUser) {
-            await UserService.createUser({
-              email: user.email as string,
-              name: user.name as string,
-              image: user.image,
-              googleId: account.providerAccountId,
-            })
+          const user = await UserService.findByEmail(credentials.email)
+          
+          if (!user || !user.password) {
+            throw new Error('Invalid credentials')
           }
-                     
-          return true
-        } catch (error) {
-          console.error('Error during sign in:', error)
-          return false
+          
+          const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
+          
+          if (!isPasswordValid) {
+            throw new Error('Invalid credentials')
+          }
+          
+          return {
+            id: user._id.toString(),
+            email: user.email,
+            name: user.name,
+            image: user.image
+          }
+        } catch (error: any) {
+          throw new Error(error.message || 'Error during sign in')
         }
       }
-      return true
-    },
+    })
+  ],
+  callbacks: {
     async session({ session, token }) {
       try {
         if (session.user?.email) {
@@ -47,9 +57,9 @@ export const authOptions: NextAuthOptions = {
         return session
       }
     },
-    async jwt({ token, account }) {
-      if (account) {
-        token.accessToken = account.access_token
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id
       }
       return token
     },

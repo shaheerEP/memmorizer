@@ -4,37 +4,44 @@ import { useState } from "react"
 import { Brain, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const router = useRouter()
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError("")
     
     try {
-      const res = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+        }),
       })
 
-      if (res?.error) {
-        setError("Invalid credentials")
+      if (!res.ok) {
+        const data = await res.json()
+        setError(data.message || "Registration failed")
         setIsLoading(false)
       } else {
-        router.push("/")
+        router.push("/login")
       }
     } catch (error) {
-      console.error("Login failed:", error)
+      console.error("Registration failed:", error)
       setError("An unexpected error occurred")
       setIsLoading(false)
     }
@@ -54,19 +61,33 @@ export default function LoginPage() {
           <p className="text-gray-600 dark:text-gray-300">Master your learning with intelligent spaced repetition</p>
         </div>
 
-        {/* Login Card */}
+        {/* Register Card */}
         <Card className="shadow-xl border-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
           <CardHeader className="text-center pb-4">
-            <CardTitle className="text-2xl font-semibold">Welcome Back</CardTitle>
-            <CardDescription className="text-base">Sign in to continue your learning journey</CardDescription>
+            <CardTitle className="text-2xl font-semibold">Create an Account</CardTitle>
+            <CardDescription className="text-base">Sign up to start your learning journey</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <form onSubmit={handleLogin} className="space-y-4">
+            <form onSubmit={handleRegister} className="space-y-4">
               {error && (
                 <div className="p-3 text-sm text-red-500 bg-red-50 dark:bg-red-900/10 rounded-md">
                   {error}
                 </div>
               )}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300" htmlFor="name">
+                  Full Name
+                </label>
+                <input
+                  id="name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  placeholder="John Doe"
+                  required
+                />
+              </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-300" htmlFor="email">
                   Email
@@ -103,7 +124,7 @@ export default function LoginPage() {
                 {isLoading ? (
                   <Loader2 className="h-5 w-5 animate-spin mr-3" />
                 ) : (
-                  "Sign In"
+                  "Sign Up"
                 )}
               </Button>
             </form>
@@ -115,39 +136,24 @@ export default function LoginPage() {
               </div>
               <div className="relative flex justify-center text-sm">
                 <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-                  New to StudyFlow?
+                  Already have an account?
                 </span>
               </div>
             </div>
             
             <div className="text-center">
-              <Link href="/register" className="text-sm font-medium text-primary hover:underline">
-                Create an account
+              <Link href="/login" className="text-sm font-medium text-primary hover:underline">
+                Sign in instead
               </Link>
             </div>
 
-            {/* Features */}
-            <div className="space-y-3 pt-2">
-              <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-                <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-                <span>Sync your progress across all devices</span>
-              </div>
-              <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-                <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                <span>Secure cloud backup of your study data</span>
-              </div>
-              <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-                <div className="w-2 h-2 bg-purple-500 rounded-full mr-3"></div>
-                <span>Personalized learning analytics</span>
-              </div>
-            </div>
           </CardContent>
         </Card>
 
         {/* Footer */}
         <div className="text-center mt-8 space-y-2">
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            By signing in, you agree to our{" "}
+            By signing up, you agree to our{" "}
             <a href="#" className="text-primary hover:underline">
               Terms of Service
             </a>{" "}
@@ -162,4 +168,3 @@ export default function LoginPage() {
     </div>
   )
 }
-  

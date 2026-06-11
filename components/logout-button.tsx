@@ -2,6 +2,7 @@
 
 import { LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { signOut } from "next-auth/react"
 import {
   Dialog,
   DialogContent,
@@ -13,18 +14,12 @@ import {
 } from "@/components/ui/dialog"
 
 export function LogoutButton() {
-  const handleLogout = () => {
-    // Clear authentication data
+  const handleLogout = async () => {
+    // Clear custom authentication data if any
     localStorage.removeItem("studyflow_auth")
 
-    // In a real app, you would also:
-    // 1. Revoke Google OAuth tokens
-    // 2. Clear all user data from localStorage
-    // 3. Clear cookies
-    // 4. Notify your backend to invalidate the session
-
-    // Redirect to login page
-    window.location.href = "/login"
+    // Call NextAuth signOut
+    await signOut({ callbackUrl: "/login" })
   }
 
   return (
